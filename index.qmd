@@ -75,7 +75,10 @@ SSID_summary <- event_log$ssid |>
   as.data.frame() |>
   rename("SSID" = Var1, "Count" = Freq)
 
-knitr::kable(SSID_summary, caption = "All SSIDs and their counts from Event_log.csv")
+knitr::kable(
+  SSID_summary,
+  caption = "All SSIDs and their counts from Event_log.csv"
+)
 ```
 
 Out of a total of **`r SSID_summary$Count |> sum()`** SSIDs, **`r SSID_summary |> filter(is.na(SSID)) |> pull(Count)`** of them are **NAs** (blank). I had a talk about this with **chatGPT** ([Link to the chat](https://chatgpt.com/share/694215c0-55d8-800a-8662-fde501d27b85)), it suggested that perhaps the blank SSIDs might indicate the use of **cellular networks** (5G, LTE, etc.).
@@ -84,7 +87,7 @@ Out of a total of **`r SSID_summary$Count |> sum()`** SSIDs, **`r SSID_summary |
 
 Clients can be categorized into different groups:
 
--   Clients that has **device names** in them, such as `MACs-MacBook-Pro-2` and `Android-5`, will be grouped into their respective devices, so `MACs-MacBook-Pro-2` belongs to `Mac`, whereas `Android-5` belongs to `Android`.
+-   Clients with **device-like names** (e.g., `MacBook` or `Android-…`), will be grouped into their respective devices, so `MACs-MacBook-Pro-2` belongs to `Mac`, whereas `Android-5` belongs to `Android`.
 
 -   **6 bytes, hex, colon-separated** clients, such as `a6:06:1f:a7:6f:70` and `76:95:75:d9:2d:32`, are **MAC addresses** and will be put into `Mac` group.
 
