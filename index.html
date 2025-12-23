@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Xuan Hieu Nguyen">
+
+<title>UTH wifi usage analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="index_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="index_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="index_files/libs/quarto-html/anchor.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="index_files/libs/bootstrap/bootstrap-9e3ffae467580fdb927a41352e75a2e0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="index_files/libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+
+<script src="index_files/libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+
+<script src="index_files/libs/plotly-binding-4.11.0/plotly.js"></script>
+
+<script src="index_files/libs/typedarray-0.1/typedarray.min.js"></script>
+
+<script src="index_files/libs/jquery-3.5.1/jquery.min.js"></script>
+
+<link href="index_files/libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+
+<script src="index_files/libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+
+<link href="index_files/libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+
+<script src="index_files/libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
+
+<script src="index_files/libs/kePrint-0.0.1/kePrint.js"></script>
+
+<link href="index_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">UTH wifi usage analysis</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Xuan Hieu Nguyen </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>The codes to read in the data:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Load the necessary libraries</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Event log</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>event_log <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"Event_log.csv"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>() <span class="sc">|&gt;</span> <span class="co"># clean column names</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">time_07 =</span> <span class="fu">ymd_hms</span>(<span class="fu">paste</span>(<span class="st">"2025"</span>, time_07))) <span class="co"># Turn `time_07` column into Date object</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Set the path to your file</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>file_path <span class="ot">&lt;-</span> <span class="st">"Summary Report 2025-01-01 - 2025-06-30.xlsx"</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Get the names of all sheets in the file</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>sheet_names <span class="ot">&lt;-</span> <span class="fu">excel_sheets</span>(file_path)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Read all sheets into a list of data frames</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>all_sheets <span class="ot">&lt;-</span> <span class="fu">set_names</span>(sheet_names) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(<span class="sc">~</span> <span class="fu">read_excel</span>(<span class="at">path =</span> file_path, <span class="at">sheet =</span> .x) <span class="sc">|&gt;</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        dplyr<span class="sc">::</span><span class="fu">rename_with</span>(tolower) <span class="sc">|&gt;</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        janitor<span class="sc">::</span><span class="fu">clean_names</span>())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<section id="i.-the-event-log-.csv-file" class="level1">
+<h1>I. The event log (.csv file)</h1>
+<section id="log-time" class="level2">
+<h2 class="anchored" data-anchor-id="log-time">Log time</h2>
+<p>First of all, I was curious about the time interval of <code>event_log</code>, so I had a look at it:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Log time starts:"</span>, <span class="fu">min</span>(event_log<span class="sc">$</span>time_07)) <span class="sc">|&gt;</span> <span class="fu">cat</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Log time starts: 2025-12-16 08:02:43</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(<span class="st">"Log time ends:"</span>, <span class="fu">max</span>(event_log<span class="sc">$</span>time_07)) <span class="sc">|&gt;</span> <span class="fu">cat</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Log time ends: 2025-12-16 08:03:15</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">max</span>(event_log<span class="sc">$</span>time_07) <span class="sc">-</span> <span class="fu">min</span>(event_log<span class="sc">$</span>time_07)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Time difference of 32 secs</code></pre>
+</div>
+</div>
+<p>So, <code>event_log</code> contains <strong>1000 records</strong> within <strong>32 seconds</strong>!!!</p>
+</section>
+<section id="access-point" class="level2">
+<h2 class="anchored" data-anchor-id="access-point">Access point</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>event_log <span class="ot">&lt;-</span> event_log <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">zone =</span> <span class="fu">str_sub</span>(access_point, <span class="dv">1</span>, <span class="dv">4</span>), <span class="at">.after =</span> access_point)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>event_log<span class="sc">$</span>access_point <span class="sc">|&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>(<span class="at">useNA =</span> <span class="st">"ifany"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>Freq) <span class="ot">-&gt;</span> seeing_access_point</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>event_log<span class="sc">$</span>zone <span class="sc">|&gt;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>(<span class="at">useNA =</span> <span class="st">"ifany"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>Freq) <span class="ot">-&gt;</span> seeing_zone</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="ssids" class="level2">
+<h2 class="anchored" data-anchor-id="ssids">SSIDs</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>SSID_summary <span class="ot">&lt;-</span> event_log<span class="sc">$</span>ssid <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>(<span class="at">useNA =</span> <span class="st">"ifany"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">"SSID"</span> <span class="ot">=</span> Var1, <span class="st">"Count"</span> <span class="ot">=</span> Freq)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(SSID_summary, <span class="at">caption =</span> <span class="st">"All SSIDs and their counts from Event_log.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>All SSIDs and their counts from Event_log.csv</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">SSID</th>
+<th style="text-align: right;">Count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">UTH</td>
+<td style="text-align: right;">311</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UTH for Staff</td>
+<td style="text-align: right;">21</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">UTH for Visitor</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">665</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Out of a total of <strong>1000</strong> SSIDs, <strong>665</strong> of them are <strong>NAs</strong> (blank). I had a talk about this with <strong>chatGPT</strong> (<a href="https://chatgpt.com/share/694215c0-55d8-800a-8662-fde501d27b85">Link to the chat</a>), it suggested that perhaps the blank SSIDs might indicate the use of <strong>cellular networks</strong> (5G, LTE, etc.).</p>
+</section>
+<section id="clients" class="level2">
+<h2 class="anchored" data-anchor-id="clients">Clients</h2>
+<p>Clients can be categorized into different groups:</p>
+<ul>
+<li><p>Clients that has <strong>device names</strong> in them, such as <code>MACs-MacBook-Pro-2</code> and <code>Android-5</code>, will be grouped into their respective devices, so <code>MACs-MacBook-Pro-2</code> belongs to <code>Mac</code>, whereas <code>Android-5</code> belongs to <code>Android</code>.</p></li>
+<li><p><strong>6 bytes, hex, colon-separated</strong> clients, such as <code>a6:06:1f:a7:6f:70</code> and <code>76:95:75:d9:2d:32</code>, are <strong>MAC addresses</strong> and will be put into <code>Mac</code> group.</p></li>
+<li><p>Clients with <code>DESKTOP</code> or <code>LAPTOP</code> leading in their names (for example, <code>DESKTOP-7U8VR5E</code> and <code>LAPTOP-2O7TSJGK</code>) will be infered as <code>Windows</code>.</p></li>
+<li><p>Clients with <strong>32-digit number strings</strong> like <code>1050b2c6-1e4d-43a6-b92e-ebad95e513e6</code> and <code>61a5ff55-e983-4087-9e4e-f91935a9e335</code> are <strong>UUIDs (universally unique identifiers)</strong> and will be labelled as such (These clients can be classified into other groups, but there is no way to tell which devices they are).</p></li>
+<li><p>Clients that do not belong to any groups above, like <code>Tui-la-Huyen-neee</code>, <code>Nguoi-dung-an-danh</code>, etc. will be labelled as <code>Other</code> (They may belong to one of the groups above, or an entirely different group).</p></li>
+</ul>
+<p>The following plot shows the <strong>unique count</strong> of different client types (There can be multiple records of 1 client):</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>device_names <span class="ot">&lt;-</span> <span class="st">"android|iphone|ipad|mac|windows|oppo|poco|xiaomi|laptop|redmi|samsung|galaxy|realme|nokia"</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>event_log <span class="ot">&lt;-</span> event_log <span class="sc">|&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">client_type =</span> dplyr<span class="sc">::</span><span class="fu">case_when</span>(</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">grepl</span>(<span class="st">"^[0-9a-f]{2}(:[0-9a-f]{2}){5}$"</span>, client, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>) <span class="sc">~</span> <span class="st">"Mac"</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">grepl</span>(<span class="st">"^[0-9a-f</span><span class="sc">\\</span><span class="st">-]{36}$"</span>, client, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>) <span class="sc">~</span> <span class="st">"UUID"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">grepl</span>(<span class="st">"DESKTOP|LAPTOP"</span>, client, <span class="at">ignore.case =</span> <span class="cn">FALSE</span>) <span class="sc">~</span> <span class="st">"Windows"</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        client, <span class="fu">regex</span>(device_names, <span class="at">ignore_case =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">~</span> <span class="fu">str_extract</span>(</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        client, <span class="fu">regex</span>(device_names, <span class="at">ignore_case =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">|&gt;</span> <span class="fu">str_to_title</span>(),</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Other"</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    ), <span class="at">.after =</span> client</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>event_log <span class="sc">|&gt;</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(client, client_type) <span class="sc">|&gt;</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span> <span class="co"># remove duplicated clients</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(client_type) <span class="sc">|&gt;</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>(<span class="at">useNA =</span> <span class="st">"ifany"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>Freq) <span class="sc">|&gt;</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Var1 =</span> <span class="fu">fct_reorder</span>(Var1, Freq, <span class="at">.desc =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">"Client type"</span> <span class="ot">=</span> Var1, <span class="st">"Count"</span> <span class="ot">=</span> Freq) <span class="ot">-&gt;</span> unique_client_type</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>p_client_type <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(unique_client_type, <span class="fu">aes</span>(<span class="st">`</span><span class="at">Client type</span><span class="st">`</span>, Count)) <span class="sc">+</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">"steelblue"</span>, <span class="at">color =</span> <span class="st">"skyblue"</span>) <span class="sc">+</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Unique client counts by client types"</span>) <span class="sc">+</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">30</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>plotly<span class="sc">::</span><span class="fu">ggplotly</span>(p_client_type)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-7a0514d58238bdfbb483" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-7a0514d58238bdfbb483">{"x":{"data":[{"orientation":"v","width":[0.89999999999999991,0.90000000000000013,0.90000000000000036,0.90000000000000036,0.90000000000000036,0.90000000000000036,0.90000000000000036,0.89999999999999947,0.89999999999999858,0.89999999999999858,0.89999999999999858,0.89999999999999858,0.89999999999999858,0.89999999999999858,0.89999999999999858,0.89999999999999858],"base":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"y":[133,95,43,33,16,13,12,6,6,2,2,2,1,1,1,1],"text":["Client type: Mac<br />Count: 133","Client type: UUID<br />Count:  95","Client type: Other<br />Count:  43","Client type: Android<br />Count:  33","Client type: Oppo<br />Count:  16","Client type: Windows<br />Count:  13","Client type: Redmi<br />Count:  12","Client type: Galaxy<br />Count:   6","Client type: Realme<br />Count:   6","Client type: Ipad<br />Count:   2","Client type: Iphone<br />Count:   2","Client type: Xiaomi<br />Count:   2","Client type: Laptop<br />Count:   1","Client type: Nokia<br />Count:   1","Client type: Poco<br />Count:   1","Client type: Samsung<br />Count:   1"],"type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(70,130,180,1)","line":{"width":1.8897637795275593,"color":"rgba(135,206,235,1)"}},"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":40.840182648401829,"r":7.3059360730593621,"b":37.260273972602747,"l":43.105022831050235},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"title":{"text":"Unique client counts by client types","font":{"color":"rgba(0,0,0,1)","family":"","size":17.534246575342465},"x":0,"xref":"paper"},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,16.600000000000001],"tickmode":"array","ticktext":["Mac","UUID","Other","Android","Oppo","Windows","Redmi","Galaxy","Realme","Ipad","Iphone","Xiaomi","Laptop","Nokia","Poco","Samsung"],"tickvals":[1,2,3.0000000000000004,4,5,6,7,8,9,10,11,12,13,14,15,16],"categoryorder":"array","categoryarray":["Mac","UUID","Other","Android","Oppo","Windows","Redmi","Galaxy","Realme","Ipad","Iphone","Xiaomi","Laptop","Nokia","Poco","Samsung"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-30,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0,"zeroline":false,"anchor":"y","title":{"text":"Client type","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-6.6500000000000004,139.65000000000001],"tickmode":"array","ticktext":["0","50","100"],"tickvals":[0,50,100],"categoryorder":"array","categoryarray":["0","50","100"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0,"zeroline":false,"anchor":"x","title":{"text":"Count","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":"rgba(255,255,255,1)","line":{"color":"rgba(51,51,51,1)","width":0,"linetype":"solid"},"yref":"paper","xref":"paper","layer":"below","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"4c302f4d10d4":{"x":{},"y":{},"type":"bar"}},"cur_data":"4c302f4d10d4","visdat":{"4c302f4d10d4":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>Most unique clients were <strong>Macs</strong>, followed by <strong>UUIDs</strong> and <strong>Others</strong>. As mentioned, <code>UUID</code> and <code>Other</code> can be any other groups, so <strong>Macs</strong> may not truly be the majority count.</p>
+</section>
+<section id="category-event-type-detials" class="level2">
+<h2 class="anchored" data-anchor-id="category-event-type-detials">Category, event type &amp; detials</h2>
+<section id="category-event-type" class="level3">
+<h3 class="anchored" data-anchor-id="category-event-type">Category &amp; event type</h3>
+<p>The <code>category</code> and <code>event_type</code> columns are closely related. Here you can see there are only <strong>7 unique combinations</strong> when I picked out these 2 columns and remove duplicated combinations:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>event_log <span class="sc">|&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(category, event_type) <span class="sc">|&gt;</span> <span class="co"># select only `category` and `event_type` columns</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span> <span class="co"># remove duplicated pairs</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(event_type) <span class="sc">|&gt;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">caption =</span> <span class="st">"All unique category + event_type combinations from Event_log.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>All unique category + event_type combinations from Event_log.csv</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">category</th>
+<th style="text-align: left;">event_type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">802.11</td>
+<td style="text-align: left;">802.11 association</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">802.11</td>
+<td style="text-align: left;">802.11 disassociation</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">802.1X</td>
+<td style="text-align: left;">802.1X authentication</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Events dropped</td>
+<td style="text-align: left;">Events dropped</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Network-Based Application Recognition</td>
+<td style="text-align: left;">Layer 7 firewall rule</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">WPA</td>
+<td style="text-align: left;">WPA authentication</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">WPA</td>
+<td style="text-align: left;">WPA deauthentication</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>event_log <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(event_type, details) <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(event_type) <span class="sc">|&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">top_10_unique_details =</span> details <span class="sc">|&gt;</span> <span class="fu">unique</span>() <span class="sc">|&gt;</span> <span class="fu">head</span>(<span class="dv">10</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">collapse_rows</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">event_type</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">top_10_unique_details</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td rowspan="10" style="text-align: left; vertical-align: middle !important;">802.11 association</td>
+<td style="text-align: left;">"channel: 100, rssi: 20, band: 5"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"channel: 64, rssi: 30, band: 5"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"channel: 100, rssi: 37, band: 5"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"channel: 64, rssi: 35, band: 5"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"channel: 100, rssi: 32, band: 5"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"channel: 60, rssi: 17, band: 5"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"channel: 11, rssi: 35, band: 2"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"channel: 56, rssi: 14, band: 5"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"channel: 108, rssi: 16, band: 5"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"channel: 64, rssi: 12, band: 5"</td>
+</tr>
+<tr class="odd">
+<td rowspan="5" style="text-align: left; vertical-align: middle !important;">802.11 disassociation</td>
+<td style="text-align: left;">"client not responding"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"client was deauthenticated"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"client has left AP"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"unspecified reason"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"previous authentication expired"</td>
+</tr>
+<tr class="even">
+<td rowspan="10" style="text-align: left; vertical-align: middle !important;">802.1X authentication</td>
+<td style="text-align: left;">"radio: 1, vap: 3, client_mac: 28:D0:43:D3:93:17"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"radio: 1, vap: 3, client_mac: 0A:E3:7E:B4:79:29"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"radio: 2, vap: 3, client_mac: FA:91:3F:B5:35:56"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"radio: 1, vap: 3, client_mac: C6:3A:22:31:2A:1E"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"radio: 1, vap: 3, client_mac: 7E:88:EB:10:E5:86"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"radio: 1, vap: 3, client_mac: 16:67:02:0A:1A:30"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"radio: 0, vap: 3, client_mac: 52:C7:2F:5C:D1:B0"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"radio: 1, vap: 3, client_mac: 4A:D5:3C:E4:CB:7B"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"radio: 1, vap: 3, client_mac: CA:95:BC:D5:A3:2A"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"radio: 1, vap: 3, client_mac: 4E:11:75:FF:46:59"</td>
+</tr>
+<tr class="even">
+<td rowspan="10" style="text-align: left; vertical-align: middle !important;">Events dropped</td>
+<td style="text-align: left;">"287 events were not logged. &lt;i class='asx_p fa fa-info-circle auto_hohelp events_dropped' alt='[Help]' /&gt;"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"104 events were not logged. &lt;i class='asx_p fa fa-info-circle auto_hohelp events_dropped' alt='[Help]' /&gt;"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"74 events were not logged. &lt;i class='asx_p fa fa-info-circle auto_hohelp events_dropped' alt='[Help]' /&gt;"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"109 events were not logged. &lt;i class='asx_p fa fa-info-circle auto_hohelp events_dropped' alt='[Help]' /&gt;"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"65 events were not logged. &lt;i class='asx_p fa fa-info-circle auto_hohelp events_dropped' alt='[Help]' /&gt;"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"9 events were not logged. &lt;i class='asx_p fa fa-info-circle auto_hohelp events_dropped' alt='[Help]' /&gt;"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"50 events were not logged. &lt;i class='asx_p fa fa-info-circle auto_hohelp events_dropped' alt='[Help]' /&gt;"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"122 events were not logged. &lt;i class='asx_p fa fa-info-circle auto_hohelp events_dropped' alt='[Help]' /&gt;"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"241 events were not logged. &lt;i class='asx_p fa fa-info-circle auto_hohelp events_dropped' alt='[Help]' /&gt;"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"56 events were not logged. &lt;i class='asx_p fa fa-info-circle auto_hohelp events_dropped' alt='[Help]' /&gt;"</td>
+</tr>
+<tr class="even">
+<td rowspan="10" style="text-align: left; vertical-align: middle !important;">Layer 7 firewall rule</td>
+<td style="text-align: left;">"Source IP: 10.233.227.230, Source Port: 48382, Destination IP: 163.70.159.42"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"Source IP: 10.48.218.17, Source Port: 60167, Destination IP: 23.45.207.198"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"Source IP: 10.38.68.250, Source Port: 50853, Destination IP: 23.45.207.198"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"Source IP: 10.188.239.9, Source Port: 40674, Destination IP: 163.70.159.42"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"Source IP: 10.188.239.9, Source Port: 41691, Destination IP: 163.70.159.42"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"Source IP: 10.67.233.44, Source Port: 58719, Destination IP: 163.70.159.13"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"Source IP: 10.67.233.44, Source Port: 60498, Destination IP: 163.70.159.35"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"Source IP: 10.128.138.46, Source Port: 53839, Destination IP: 17.248.224.27"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">"Source IP: 10.233.227.230, Source Port: 48380, Destination IP: 163.70.159.42"</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">"Source IP: 10.203.65.123, Source Port: 38030, Destination IP: 216.239.36.223"</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">WPA authentication</td>
+<td style="text-align: left;">""</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">WPA deauthentication</td>
+<td style="text-align: left;">"radio: 0, vap: 1, client_mac: 76:4F:BF:03:08:F1"</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="details-events-dropped" class="level3">
+<h3 class="anchored" data-anchor-id="details-events-dropped">Details: Events dropped</h3>
+<p>I want to have a look at <strong>“events dropped”</strong> category specifically. Each “events dropped” has a specific count, for example, <strong>“287 events were not logged. &lt;…&gt;”</strong>. I will extract those numbers and sum them up by <strong>zones</strong> and <strong>access points</strong>:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>events_dropped <span class="ot">&lt;-</span> event_log <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(event_type <span class="sc">==</span> <span class="st">"Events dropped"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">drop_count =</span> <span class="fu">str_extract</span>(details, <span class="st">"</span><span class="sc">\\</span><span class="st">d+"</span>) <span class="sc">|&gt;</span> <span class="fu">as.integer</span>())</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>dropped_sum <span class="ot">&lt;-</span> events_dropped <span class="sc">|&gt;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(zone, access_point) <span class="sc">|&gt;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">count =</span> <span class="fu">sum</span>(drop_count))</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>p_jitter <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dropped_sum, <span class="fu">aes</span>(zone, count, <span class="at">colour =</span> access_point)) <span class="sc">+</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Jitterplot of dropped event counts"</span>) <span class="sc">+</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>plotly<span class="sc">::</span><span class="fu">ggplotly</span>(p_jitter)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-cc0d2ab53b435e7617d6" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-cc0d2ab53b435e7617d6">{"x":{"data":[{"x":[1.0844175820238888],"y":[2651.8879032200202],"text":"zone: KhuA<br />count:  2652<br />access_point: KhuA_L1_HoiTruong1","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(248,118,109,1)"}},"hoveron":"points","name":"KhuA_L1_HoiTruong1","legendgroup":"KhuA_L1_HoiTruong1","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.0405800049193203],"y":[7514.1964596480129],"text":"zone: KhuA<br />count:  7514<br />access_point: KhuA_L1_HoiTruong2","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(245,121,97,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(245,121,97,1)"}},"hoveron":"points","name":"KhuA_L1_HoiTruong2","legendgroup":"KhuA_L1_HoiTruong2","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.172701776213944],"y":[93.919615489616987],"text":"zone: KhuA<br />count:    94<br />access_point: KhuA_L1_Server","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(242,124,84,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(242,124,84,1)"}},"hoveron":"points","name":"KhuA_L1_Server","legendgroup":"KhuA_L1_Server","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.1919344018213451],"y":[73.291357684880495],"text":"zone: KhuA<br />count:    73<br />access_point: KhuA_L2_A215","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(239,128,70,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(239,128,70,1)"}},"hoveron":"points","name":"KhuA_L2_A215","legendgroup":"KhuA_L2_A215","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[0.9742145824246109],"y":[20.075048071518541],"text":"zone: KhuA<br />count:    20<br />access_point: KhuA_Phai1","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(235,131,52,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(235,131,52,1)"}},"hoveron":"points","name":"KhuA_Phai1","legendgroup":"KhuA_Phai1","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[0.8878518986515701],"y":[2313.6079845555128],"text":"zone: KhuA<br />count:  2314<br />access_point: KhuA_Trai1","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(231,134,26,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(231,134,26,1)"}},"hoveron":"points","name":"KhuA_Trai1","legendgroup":"KhuA_Trai1","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.1426329595968125],"y":[95.915783251449469],"text":"zone: KhuB<br />count:    96<br />access_point: KhuB_B002","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(227,137,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(227,137,0,1)"}},"hoveron":"points","name":"KhuB_B002","legendgroup":"KhuB_B002","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.9922016986645759],"y":[275.02802308294923],"text":"zone: KhuB<br />count:   275<br />access_point: KhuB_B003","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(222,140,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(222,140,0,1)"}},"hoveron":"points","name":"KhuB_B003","legendgroup":"KhuB_B003","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.0582278195768593],"y":[852.74441231712694],"text":"zone: KhuB<br />count:   853<br />access_point: KhuB_B004","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(217,143,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(217,143,0,1)"}},"hoveron":"points","name":"KhuB_B004","legendgroup":"KhuB_B004","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.840470556449145],"y":[245.90355700459332],"text":"zone: KhuB<br />count:   246<br />access_point: KhuB_B006","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(212,146,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(212,146,0,1)"}},"hoveron":"points","name":"KhuB_B006","legendgroup":"KhuB_B006","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.8210952162742615],"y":[64.624967753514653],"text":"zone: KhuB<br />count:    65<br />access_point: KhuB_B007","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(207,149,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(207,149,0,1)"}},"hoveron":"points","name":"KhuB_B007","legendgroup":"KhuB_B007","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.0405487533658744],"y":[23.881905964761973],"text":"zone: KhuB<br />count:    24<br />access_point: KhuB_B008","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(201,151,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(201,151,0,1)"}},"hoveron":"points","name":"KhuB_B008","legendgroup":"KhuB_B008","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.1204287538304927],"y":[214.01155393626541],"text":"zone: KhuB<br />count:   214<br />access_point: KhuB_B010","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(195,154,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(195,154,0,1)"}},"hoveron":"points","name":"KhuB_B010","legendgroup":"KhuB_B010","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.9385081522166729],"y":[14.73415257614106],"text":"zone: KhuB<br />count:    15<br />access_point: KhuB_B011","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(189,157,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(189,157,0,1)"}},"hoveron":"points","name":"KhuB_B011","legendgroup":"KhuB_B011","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.1333456724882125],"y":[653.0391731671989],"text":"zone: KhuB<br />count:   653<br />access_point: KhuB_B103","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(182,159,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(182,159,0,1)"}},"hoveron":"points","name":"KhuB_B103","legendgroup":"KhuB_B103","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.0985536244697869],"y":[387.78155198898168],"text":"zone: KhuB<br />count:   388<br />access_point: KhuB_B104","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(175,162,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(175,162,0,1)"}},"hoveron":"points","name":"KhuB_B104","legendgroup":"KhuB_B104","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.9951247424818574],"y":[1196.767323501967],"text":"zone: KhuB<br />count:  1197<br />access_point: KhuB_B105","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(167,164,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(167,164,0,1)"}},"hoveron":"points","name":"KhuB_B105","legendgroup":"KhuB_B105","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.8788764546625316],"y":[103.25588622391224],"text":"zone: KhuB<br />count:   103<br />access_point: KhuB_B106","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(159,166,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(159,166,0,1)"}},"hoveron":"points","name":"KhuB_B106","legendgroup":"KhuB_B106","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.8812589311972261],"y":[787.72673370260748],"text":"zone: KhuB<br />count:   788<br />access_point: KhuB_B108","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(151,169,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(151,169,0,1)"}},"hoveron":"points","name":"KhuB_B108","legendgroup":"KhuB_B108","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.9238354141823948],"y":[239.30290539786219],"text":"zone: KhuB<br />count:   239<br />access_point: KhuB_B109","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(142,171,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(142,171,0,1)"}},"hoveron":"points","name":"KhuB_B109","legendgroup":"KhuB_B109","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.8644519980996848],"y":[1129.7809802699835],"text":"zone: KhuB<br />count:  1130<br />access_point: KhuB_B110","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(132,173,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(132,173,0,1)"}},"hoveron":"points","name":"KhuB_B110","legendgroup":"KhuB_B110","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.9212696796283126],"y":[78.641852126270535],"text":"zone: KhuB<br />count:    79<br />access_point: KhuB_B111","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(121,175,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(121,175,0,1)"}},"hoveron":"points","name":"KhuB_B111","legendgroup":"KhuB_B111","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.0939880084246396],"y":[1628.2492281712591],"text":"zone: KhuB<br />count:  1628<br />access_point: KhuB_B201","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(109,177,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(109,177,0,1)"}},"hoveron":"points","name":"KhuB_B201","legendgroup":"KhuB_B201","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.8667492190375925],"y":[586.77873617913576],"text":"zone: KhuB<br />count:   587<br />access_point: KhuB_B203","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(94,178,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(94,178,0,1)"}},"hoveron":"points","name":"KhuB_B203","legendgroup":"KhuB_B203","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.0020965536125006],"y":[390.88406471870837],"text":"zone: KhuB<br />count:   391<br />access_point: KhuB_B204","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(77,180,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(77,180,0,1)"}},"hoveron":"points","name":"KhuB_B204","legendgroup":"KhuB_B204","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.8884013347327708],"y":[42.219721497036517],"text":"zone: KhuB<br />count:    42<br />access_point: KhuB_B205","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(55,182,0,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(55,182,0,1)"}},"hoveron":"points","name":"KhuB_B205","legendgroup":"KhuB_B205","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.9596757685765624],"y":[61.374268920719622],"text":"zone: KhuB<br />count:    61<br />access_point: KhuB_B206","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(4,183,6,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(4,183,6,1)"}},"hoveron":"points","name":"KhuB_B206","legendgroup":"KhuB_B206","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.1048585412092509],"y":[583.88769987337287],"text":"zone: KhuB<br />count:   584<br />access_point: KhuB_B207","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,185,43,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,185,43,1)"}},"hoveron":"points","name":"KhuB_B207","legendgroup":"KhuB_B207","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.0845262238755824],"y":[309.26991218887269],"text":"zone: KhuB<br />count:   309<br />access_point: KhuB_B210","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,186,62,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,186,62,1)"}},"hoveron":"points","name":"KhuB_B210","legendgroup":"KhuB_B210","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.1415598451159896],"y":[740.31597388163209],"text":"zone: KhuB<br />count:   740<br />access_point: KhuB_B211","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,187,77,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,187,77,1)"}},"hoveron":"points","name":"KhuB_B211","legendgroup":"KhuB_B211","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.1456150748766958],"y":[474.01952739953992],"text":"zone: KhuB<br />count:   474<br />access_point: KhuB_B302","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,188,90,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,188,90,1)"}},"hoveron":"points","name":"KhuB_B302","legendgroup":"KhuB_B302","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.9539297170005738],"y":[18128.610068821348],"text":"zone: KhuB<br />count: 18129<br />access_point: KhuB_B303","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,189,102,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,189,102,1)"}},"hoveron":"points","name":"KhuB_B303","legendgroup":"KhuB_B303","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.1487023906782268],"y":[117.8033870415762],"text":"zone: KhuB<br />count:   118<br />access_point: KhuB_B304","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,190,113,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,190,113,1)"}},"hoveron":"points","name":"KhuB_B304","legendgroup":"KhuB_B304","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.9650193378329277],"y":[693.90852091442798],"text":"zone: KhuB<br />count:   694<br />access_point: KhuB_B305","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,191,123,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,191,123,1)"}},"hoveron":"points","name":"KhuB_B305","legendgroup":"KhuB_B305","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.1345444980077444],"y":[4551.8305394543331],"text":"zone: KhuB<br />count:  4552<br />access_point: KhuB_B306","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,133,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,192,133,1)"}},"hoveron":"points","name":"KhuB_B306","legendgroup":"KhuB_B306","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.8143996078521014],"y":[260.88393863402308],"text":"zone: KhuB<br />count:   261<br />access_point: KhuB_B307","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,143,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,192,143,1)"}},"hoveron":"points","name":"KhuB_B307","legendgroup":"KhuB_B307","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.9965747920796275],"y":[1475.7174569008871],"text":"zone: KhuB<br />count:  1476<br />access_point: KhuB_B308","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,152,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,192,152,1)"}},"hoveron":"points","name":"KhuB_B308","legendgroup":"KhuB_B308","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.1934959543868899],"y":[253.60672940686345],"text":"zone: KhuB<br />count:   254<br />access_point: KhuB_B309","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,193,160,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,193,160,1)"}},"hoveron":"points","name":"KhuB_B309","legendgroup":"KhuB_B309","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.994451143592596],"y":[11035.053744516708],"text":"zone: KhuB<br />count: 11035<br />access_point: KhuB_B310","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,193,169,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,193,169,1)"}},"hoveron":"points","name":"KhuB_B310","legendgroup":"KhuB_B310","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1.8147920239716768],"y":[1335.6086808769032],"text":"zone: KhuB<br />count:  1336<br />access_point: KhuB_B311","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,177,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,192,177,1)"}},"hoveron":"points","name":"KhuB_B311","legendgroup":"KhuB_B311","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.0793851308524607],"y":[87.218406051397324],"text":"zone: KhuB<br />count:    87<br />access_point: KhuB_ThuVienCS1","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,192,185,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,192,185,1)"}},"hoveron":"points","name":"KhuB_ThuVienCS1","legendgroup":"KhuB_ThuVienCS1","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.9960061512887477],"y":[495.21009414568545],"text":"zone: KhuC<br />count:   495<br />access_point: KhuC_C001","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,191,193,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,191,193,1)"}},"hoveron":"points","name":"KhuC_C001","legendgroup":"KhuC_C001","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.8501300415955484],"y":[176.69713478498161],"text":"zone: KhuC<br />count:   177<br />access_point: KhuC_C003","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,191,200,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,191,200,1)"}},"hoveron":"points","name":"KhuC_C003","legendgroup":"KhuC_C003","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.8461737777106464],"y":[438.77427586205306],"text":"zone: KhuC<br />count:   439<br />access_point: KhuC_C004","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,190,207,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,190,207,1)"}},"hoveron":"points","name":"KhuC_C004","legendgroup":"KhuC_C004","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.9137186973355709],"y":[46613.279322409631],"text":"zone: KhuC<br />count: 46613<br />access_point: KhuC_C005","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,188,214,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,188,214,1)"}},"hoveron":"points","name":"KhuC_C005","legendgroup":"KhuC_C005","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.9310498801991343],"y":[36756.608895074205],"text":"zone: KhuC<br />count: 36757<br />access_point: KhuC_C007","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,187,220,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,187,220,1)"}},"hoveron":"points","name":"KhuC_C007","legendgroup":"KhuC_C007","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.8022010983899235],"y":[297.10117105953395],"text":"zone: KhuC<br />count:   297<br />access_point: KhuC_C008","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,185,227,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,185,227,1)"}},"hoveron":"points","name":"KhuC_C008","legendgroup":"KhuC_C008","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.8240842180326582],"y":[105.01690951474011],"text":"zone: KhuC<br />count:   105<br />access_point: KhuC_C009","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,183,232,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,183,232,1)"}},"hoveron":"points","name":"KhuC_C009","legendgroup":"KhuC_C009","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.0084038507193327],"y":[136.13182430751621],"text":"zone: KhuC<br />count:   136<br />access_point: KhuC_C101","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,181,238,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,181,238,1)"}},"hoveron":"points","name":"KhuC_C101","legendgroup":"KhuC_C101","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.9550210507586598],"y":[96.897344548441467],"text":"zone: KhuC<br />count:    97<br />access_point: KhuC_C102","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,178,243,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,178,243,1)"}},"hoveron":"points","name":"KhuC_C102","legendgroup":"KhuC_C102","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.9603619537316264],"y":[33326.225974874011],"text":"zone: KhuC<br />count: 33326<br />access_point: KhuC_C103","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,175,247,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,175,247,1)"}},"hoveron":"points","name":"KhuC_C103","legendgroup":"KhuC_C103","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.9233129315078257],"y":[209.03694850690664],"text":"zone: KhuC<br />count:   209<br />access_point: KhuC_C104","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,172,251,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,172,251,1)"}},"hoveron":"points","name":"KhuC_C104","legendgroup":"KhuC_C104","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.1089386695995929],"y":[31320.665327917784],"text":"zone: KhuC<br />count: 31321<br />access_point: KhuC_C105","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,169,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,169,255,1)"}},"hoveron":"points","name":"KhuC_C105","legendgroup":"KhuC_C105","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.0079144883900879],"y":[195.88798091262578],"text":"zone: KhuC<br />count:   196<br />access_point: KhuC_C106","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,165,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,165,255,1)"}},"hoveron":"points","name":"KhuC_C106","legendgroup":"KhuC_C106","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.0104548992589115],"y":[752.35669920053328],"text":"zone: KhuC<br />count:   752<br />access_point: KhuC_C107","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(55,161,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(55,161,255,1)"}},"hoveron":"points","name":"KhuC_C107","legendgroup":"KhuC_C107","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.1987236839719118],"y":[56.015040294267237],"text":"zone: KhuC<br />count:    56<br />access_point: KhuC_C201","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(89,157,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(89,157,255,1)"}},"hoveron":"points","name":"KhuC_C201","legendgroup":"KhuC_C201","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.0065174972638489],"y":[578.81496055070306],"text":"zone: KhuC<br />count:   579<br />access_point: KhuC_C202","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(112,153,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(112,153,255,1)"}},"hoveron":"points","name":"KhuC_C202","legendgroup":"KhuC_C202","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.1566461392678322],"y":[669.69694758374249],"text":"zone: KhuC<br />count:   670<br />access_point: KhuC_C203","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(131,149,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(131,149,255,1)"}},"hoveron":"points","name":"KhuC_C203","legendgroup":"KhuC_C203","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.1644985338672997],"y":[41941.195833628255],"text":"zone: KhuC<br />count: 41941<br />access_point: KhuC_C204","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(147,144,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(147,144,255,1)"}},"hoveron":"points","name":"KhuC_C204","legendgroup":"KhuC_C204","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.0596845352090893],"y":[460.90973563753067],"text":"zone: KhuC<br />count:   461<br />access_point: KhuC_C205","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(162,139,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(162,139,255,1)"}},"hoveron":"points","name":"KhuC_C205","legendgroup":"KhuC_C205","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[2.9418645997531714],"y":[1116.3693101143465],"text":"zone: KhuC<br />count:  1116<br />access_point: KhuC_C206","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(175,135,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(175,135,255,1)"}},"hoveron":"points","name":"KhuC_C206","legendgroup":"KhuC_C206","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.1421239146962763],"y":[2717.169465117343],"text":"zone: KhuC<br />count:  2717<br />access_point: KhuC_C207","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(186,130,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(186,130,255,1)"}},"hoveron":"points","name":"KhuC_C207","legendgroup":"KhuC_C207","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.0031445120461284],"y":[784.96128750350329],"text":"zone: KhuC<br />count:   785<br />access_point: KhuC_C208","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(197,125,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(197,125,255,1)"}},"hoveron":"points","name":"KhuC_C208","legendgroup":"KhuC_C208","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.1126592113636433],"y":[61.90564937926829],"text":"zone: KhuC<br />count:    62<br />access_point: KhuC_C209","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(206,121,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(206,121,255,1)"}},"hoveron":"points","name":"KhuC_C209","legendgroup":"KhuC_C209","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[3.9529752674512566],"y":[88.654022001475099],"text":"zone: KhuD<br />count:    89<br />access_point: KhuD_D104","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(214,116,253,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(214,116,253,1)"}},"hoveron":"points","name":"KhuD_D104","legendgroup":"KhuD_D104","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[4.1558284949511286],"y":[50.674567414820196],"text":"zone: KhuD<br />count:    51<br />access_point: KhuD_D401","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(222,112,249,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(222,112,249,1)"}},"hoveron":"points","name":"KhuD_D401","legendgroup":"KhuD_D401","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[4.8241447855718436],"y":[1220.7086153024807],"text":"zone: KhuE<br />count:  1221<br />access_point: KhuE_E101","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(229,109,245,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(229,109,245,1)"}},"hoveron":"points","name":"KhuE_E101","legendgroup":"KhuE_E101","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[5.0006699878722429],"y":[807.14875013697895],"text":"zone: KhuE<br />count:   807<br />access_point: KhuE_E102","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(235,105,240,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(235,105,240,1)"}},"hoveron":"points","name":"KhuE_E102","legendgroup":"KhuE_E102","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[5.1447010097093884],"y":[5295.0806142460551],"text":"zone: KhuE<br />count:  5295<br />access_point: KhuE_E104","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(240,103,234,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(240,103,234,1)"}},"hoveron":"points","name":"KhuE_E104","legendgroup":"KhuE_E104","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[5.0145875683054326],"y":[3050.6392416421322],"text":"zone: KhuE<br />count:  3051<br />access_point: KhuE_E201","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(244,100,228,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(244,100,228,1)"}},"hoveron":"points","name":"KhuE_E201","legendgroup":"KhuE_E201","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[4.8485925978049638],"y":[1110.719016784057],"text":"zone: KhuE<br />count:  1111<br />access_point: KhuE_E204","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(248,98,222,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(248,98,222,1)"}},"hoveron":"points","name":"KhuE_E204","legendgroup":"KhuE_E204","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[5.8536948497407142],"y":[578.81183946859096],"text":"zone: KhuF<br />count:   579<br />access_point: KhuF_F101","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(251,97,216,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(251,97,216,1)"}},"hoveron":"points","name":"KhuF_F101","legendgroup":"KhuF_F101","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[6.1265718040056525],"y":[9310.2033570578315],"text":"zone: KhuF<br />count:  9310<br />access_point: KhuF_F102","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(253,97,208,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(253,97,208,1)"}},"hoveron":"points","name":"KhuF_F102","legendgroup":"KhuF_F102","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[6.1738066534511749],"y":[336.84108093827962],"text":"zone: KhuF<br />count:   337<br />access_point: KhuF_F103","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(255,97,201,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(255,97,201,1)"}},"hoveron":"points","name":"KhuF_F103","legendgroup":"KhuF_F103","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[6.0298460234887896],"y":[183.19201863091439],"text":"zone: KhuF<br />count:   183<br />access_point: KhuF_F202","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(255,97,193,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(255,97,193,1)"}},"hoveron":"points","name":"KhuF_F202","legendgroup":"KhuF_F202","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[5.9807263245806102],"y":[481.09542340338231],"text":"zone: KhuF<br />count:   481<br />access_point: KhuF_F301","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(255,99,185,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(255,99,185,1)"}},"hoveron":"points","name":"KhuF_F301","legendgroup":"KhuF_F301","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[5.8038217985071245],"y":[351.61450933571905],"text":"zone: KhuF<br />count:   352<br />access_point: KhuF_F302","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(255,100,177,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(255,100,177,1)"}},"hoveron":"points","name":"KhuF_F302","legendgroup":"KhuF_F302","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[5.8179018060676757],"y":[25937.704474727623],"text":"zone: KhuF<br />count: 25938<br />access_point: KhuF_F303","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(255,102,168,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(255,102,168,1)"}},"hoveron":"points","name":"KhuF_F303","legendgroup":"KhuF_F303","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[5.8738441524095837],"y":[10338.998312601447],"text":"zone: KhuF<br />count: 10339<br />access_point: KhuF_F501","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(255,104,159,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(255,104,159,1)"}},"hoveron":"points","name":"KhuF_F501","legendgroup":"KhuF_F501","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[5.9443160844035443],"y":[286.34833326712248],"text":"zone: KhuF<br />count:   286<br />access_point: KhuF_F502","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(255,107,150,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(255,107,150,1)"}},"hoveron":"points","name":"KhuF_F502","legendgroup":"KhuF_F502","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[6.0736007511615755],"y":[416.81260320246218],"text":"zone: KhuF<br />count:   417<br />access_point: KhuF_F601","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(254,109,141,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(254,109,141,1)"}},"hoveron":"points","name":"KhuF_F601","legendgroup":"KhuF_F601","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[5.9122517106123267],"y":[11923.039360824414],"text":"zone: KhuF<br />count: 11923<br />access_point: KhuF_F603","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(252,112,131,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(252,112,131,1)"}},"hoveron":"points","name":"KhuF_F603","legendgroup":"KhuF_F603","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[6.8067374218255283],"y":[42.346473336406049],"text":"zone: KhuK<br />count:    42<br />access_point: KhuK_Cantin2","type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(250,115,120,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(250,115,120,1)"}},"hoveron":"points","name":"KhuK_Cantin2","legendgroup":"KhuK_Cantin2","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":40.840182648401829,"r":7.3059360730593621,"b":37.260273972602747,"l":54.794520547945211},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"title":{"text":"Jitterplot of dropped event counts","font":{"color":"rgba(0,0,0,1)","family":"","size":17.534246575342465},"x":0,"xref":"paper"},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,7.5999999999999996],"tickmode":"array","ticktext":["KhuA","KhuB","KhuC","KhuD","KhuE","KhuF","KhuK"],"tickvals":[1,2,3,4.0000000000000009,5,6,7],"categoryorder":"array","categoryarray":["KhuA","KhuB","KhuC","KhuD","KhuE","KhuF","KhuK"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0,"zeroline":false,"anchor":"y","title":{"text":"zone","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-2315.1931059155331,48943.206580901307],"tickmode":"array","ticktext":["0","10000","20000","30000","40000"],"tickvals":[0,10000,20000,30000.000000000004,40000],"categoryorder":"array","categoryarray":["0","10000","20000","30000","40000"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0,"zeroline":false,"anchor":"x","title":{"text":"count","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":"rgba(255,255,255,1)","line":{"color":"rgba(51,51,51,1)","width":0,"linetype":"solid"},"yref":"paper","xref":"paper","layer":"below","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":true,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498},"title":{"text":"access_point","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"4c30303e114":{"x":{},"y":{},"colour":{},"type":"scatter"}},"cur_data":"4c30303e114","visdat":{"4c30303e114":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dropped_sum_zone <span class="ot">&lt;-</span> events_dropped <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(zone) <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">total =</span> <span class="fu">sum</span>(drop_count))</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(dropped_sum_zone)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">zone</th>
+<th style="text-align: right;">total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">KhuA</td>
+<td style="text-align: right;">12667</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KhuB</td>
+<td style="text-align: right;">49123</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">KhuC</td>
+<td style="text-align: right;">199307</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KhuD</td>
+<td style="text-align: right;">140</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">KhuE</td>
+<td style="text-align: right;">11485</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KhuF</td>
+<td style="text-align: right;">60145</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">KhuK</td>
+<td style="text-align: right;">42</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="ii.-the-summary-report-.xlsx-file" class="level1">
+<h1>II. The Summary Report (.xlsx file)</h1>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>get_client <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  event_log <span class="sc">|&gt;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(client <span class="sc">==</span> x) <span class="sc">|&gt;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(time_07) <span class="sc">|&gt;</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>()</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>individual_client_log <span class="ot">&lt;-</span> event_log <span class="sc">|&gt;</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(client) <span class="sc">|&gt;</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">client_log =</span> <span class="fu">get_client</span>(client),</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">row_count =</span> <span class="fu">map_int</span>(client_log, nrow))</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(individual_client_log)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 3
+  client                               client_log       row_count
+  &lt;chr&gt;                                &lt;list&gt;               &lt;int&gt;
+1 01ff3d7c-fe08-4a94-9f3c-f68450e2ad33 &lt;tibble [1 × 9]&gt;         1
+2 06606305-3921-4cff-93f1-5e7a2b71edf4 &lt;tibble [9 × 9]&gt;         9
+3 06:f8:e4:d4:2a:df                    &lt;tibble [1 × 9]&gt;         1
+4 07369140-156c-4537-86ef-922940c52f9e &lt;tibble [2 × 9]&gt;         2
+5 07c9d29f-7d43-4908-a816-9e200db808cb &lt;tibble [1 × 9]&gt;         1
+6 0a:85:a7:8c:d8:92                    &lt;tibble [3 × 9]&gt;         3</code></pre>
+</div>
+</div>
+<p>Cross-matching clients in CSV and XLSX files:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>unique_clients <span class="ot">&lt;-</span> event_log <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(client, client_type) <span class="sc">|&gt;</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>client_matching <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  unique_clients, all_sheets<span class="sc">$</span><span class="st">`</span><span class="at">Top clients by usage</span><span class="st">`</span>,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">by =</span> <span class="fu">join_by</span>(<span class="st">"client"</span> <span class="sc">==</span> <span class="st">"description"</span>)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

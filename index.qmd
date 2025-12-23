@@ -1,0 +1,217 @@
+---
+title: "UTH wifi usage analysis"
+author: "Xuan Hieu Nguyen"
+format:
+  html:
+    css: style.css
+editor: visual
+execute:
+  warning: false
+  message: false
+code-fold: true
+---
+
+The codes to read in the data:
+
+```{r}
+# 1. Load the necessary libraries
+library(readxl)
+library(tidyverse)
+
+# Event log
+event_log <- read_csv("Event_log.csv") |>
+  janitor::clean_names() |> # clean column names
+  mutate(time_07 = ymd_hms(paste("2025", time_07))) # Turn `time_07` column into Date object
+
+# 2. Set the path to your file
+file_path <- "Summary Report 2025-01-01 - 2025-06-30.xlsx"
+
+# 3. Get the names of all sheets in the file
+sheet_names <- excel_sheets(file_path)
+
+# 4. Read all sheets into a list of data frames
+all_sheets <- set_names(sheet_names) %>% 
+  map(~ read_excel(path = file_path, sheet = .x) |>
+        dplyr::rename_with(tolower) |>
+        janitor::clean_names())
+```
+
+# I. The event log (.csv file)
+
+## Log time
+
+First of all, I was curious about the time interval of `event_log`, so I had a look at it:
+
+```{r}
+paste("Log time starts:", min(event_log$time_07)) |> cat()
+paste("Log time ends:", max(event_log$time_07)) |> cat()
+max(event_log$time_07) - min(event_log$time_07)
+```
+
+So, `event_log` contains **1000 records** within **32 seconds**!!!
+
+## Access point
+
+```{r}
+event_log <- event_log |>
+  mutate(zone = str_sub(access_point, 1, 4), .after = access_point)
+
+event_log$access_point |>
+  table(useNA = "ifany") |>
+  as.data.frame() |>
+  arrange(-Freq) -> seeing_access_point
+
+event_log$zone |>
+  table(useNA = "ifany") |>
+  as.data.frame() |>
+  arrange(-Freq) -> seeing_zone
+```
+
+## SSIDs
+
+```{r}
+SSID_summary <- event_log$ssid |>
+  table(useNA = "ifany") |>
+  as.data.frame() |>
+  rename("SSID" = Var1, "Count" = Freq)
+
+knitr::kable(SSID_summary, caption = "All SSIDs and their counts from Event_log.csv")
+```
+
+Out of a total of **`r SSID_summary$Count |> sum()`** SSIDs, **`r SSID_summary |> filter(is.na(SSID)) |> pull(Count)`** of them are **NAs** (blank). I had a talk about this with **chatGPT** ([Link to the chat](https://chatgpt.com/share/694215c0-55d8-800a-8662-fde501d27b85)), it suggested that perhaps the blank SSIDs might indicate the use of **cellular networks** (5G, LTE, etc.).
+
+## Clients
+
+Clients can be categorized into different groups:
+
+-   Clients that has **device names** in them, such as `MACs-MacBook-Pro-2` and `Android-5`, will be grouped into their respective devices, so `MACs-MacBook-Pro-2` belongs to `Mac`, whereas `Android-5` belongs to `Android`.
+
+-   **6 bytes, hex, colon-separated** clients, such as `a6:06:1f:a7:6f:70` and `76:95:75:d9:2d:32`, are **MAC addresses** and will be put into `Mac` group.
+
+-   Clients with `DESKTOP` or `LAPTOP` leading in their names (for example, `DESKTOP-7U8VR5E` and `LAPTOP-2O7TSJGK`) will be infered as `Windows`.
+
+-   Clients with **32-digit number strings** like `1050b2c6-1e4d-43a6-b92e-ebad95e513e6` and `61a5ff55-e983-4087-9e4e-f91935a9e335` are **UUIDs (universally unique identifiers)** and will be labelled as such (These clients can be classified into other groups, but there is no way to tell which devices they are).
+
+-   Clients that do not belong to any groups above, like `Tui-la-Huyen-neee`, `Nguoi-dung-an-danh`, etc. will be labelled as `Other` (They may belong to one of the groups above, or an entirely different group).
+
+The following plot shows the **unique count** of different client types (There can be multiple records of 1 client):
+
+```{r}
+device_names <- "android|iphone|ipad|mac|windows|oppo|poco|xiaomi|laptop|redmi|samsung|galaxy|realme|nokia"
+
+event_log <- event_log |>
+  dplyr::mutate(
+    client_type = dplyr::case_when(
+      grepl("^[0-9a-f]{2}(:[0-9a-f]{2}){5}$", client, ignore.case = TRUE) ~ "Mac",
+      grepl("^[0-9a-f\\-]{36}$", client, ignore.case = TRUE) ~ "UUID",
+      grepl("DESKTOP|LAPTOP", client, ignore.case = FALSE) ~ "Windows",
+      str_detect(
+        client, regex(device_names, ignore_case = TRUE)
+      ) ~ str_extract(
+        client, regex(device_names, ignore_case = TRUE)
+      ) |> str_to_title(),
+      TRUE ~ "Other"
+    ), .after = client
+  )
+
+event_log |>
+  select(client, client_type) |>
+  distinct() |> # remove duplicated clients
+  pull(client_type) |>
+  table(useNA = "ifany") |>
+  as.data.frame() |>
+  arrange(-Freq) |>
+  mutate(Var1 = fct_reorder(Var1, Freq, .desc = TRUE)) |>
+  rename("Client type" = Var1, "Count" = Freq) -> unique_client_type
+
+p_client_type <- ggplot(unique_client_type, aes(`Client type`, Count)) +
+  geom_col(fill = "steelblue", color = "skyblue") +
+  labs(title = "Unique client counts by client types") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+plotly::ggplotly(p_client_type)
+```
+
+Most unique clients were **Macs**, followed by **UUIDs** and **Others**. As mentioned, `UUID` and `Other` can be any other groups, so **Macs** may not truly be the majority count.
+
+## Category, event type & detials
+
+### Category & event type
+
+The `category` and `event_type` columns are closely related. Here you can see there are only **7 unique combinations** when I picked out these 2 columns and remove duplicated combinations:
+
+```{r}
+event_log |>
+  select(category, event_type) |> # select only `category` and `event_type` columns
+  distinct() |> # remove duplicated pairs
+  arrange(event_type) |>
+  knitr::kable(caption = "All unique category + event_type combinations from Event_log.csv")
+```
+
+```{r}
+event_log |>
+  select(event_type, details) |>
+  group_by(event_type) |>
+  summarise(top_10_unique_details = details |> unique() |> head(10)) |>
+  knitr::kable() |>
+  kableExtra::collapse_rows()
+```
+
+### Details: Events dropped
+
+I want to have a look at **"events dropped"** category specifically. Each "events dropped" has a specific count, for example, **"287 events were not logged. <...>"**. I will extract those numbers and sum them up by **zones** and **access points**:
+
+```{r}
+events_dropped <- event_log |>
+  filter(event_type == "Events dropped") |>
+  mutate(drop_count = str_extract(details, "\\d+") |> as.integer())
+
+dropped_sum <- events_dropped |>
+  group_by(zone, access_point) |>
+  summarise(count = sum(drop_count))
+
+p_jitter <- ggplot(dropped_sum, aes(zone, count, colour = access_point)) +
+  geom_jitter(width = 0.2) +
+  labs(title = "Jitterplot of dropped event counts") +
+  theme_bw()
+
+plotly::ggplotly(p_jitter)
+
+dropped_sum_zone <- events_dropped |>
+  group_by(zone) |>
+  summarise(total = sum(drop_count))
+
+knitr::kable(dropped_sum_zone)
+```
+
+# II. The Summary Report (.xlsx file)
+
+```{r}
+get_client <- function(x) {
+  event_log |>
+    filter(client == x) |>
+    arrange(time_07) |>
+    list()
+}
+
+individual_client_log <- event_log |>
+  group_by(client) |>
+  summarise(client_log = get_client(client),
+            row_count = map_int(client_log, nrow))
+
+head(individual_client_log)
+```
+
+Cross-matching clients in CSV and XLSX files:
+
+```{r}
+unique_clients <- event_log |>
+  select(client, client_type) |>
+  distinct()
+
+client_matching <- inner_join(
+  unique_clients, all_sheets$`Top clients by usage`,
+  by = join_by("client" == "description")
+)
+```
